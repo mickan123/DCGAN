@@ -13,13 +13,13 @@ class model(object):
 
 	def __init__(self):
 		self.Z_dim = 100 #Noise vector dimensions
-		self.IMAGE_DIM = 64 #output image size is IMAGE_DIM x IMAGE_DIM
-		self.mb_size = 64 #Minibatch size
+		self.IMAGE_DIM = 96 #output image size is IMAGE_DIM x IMAGE_DIM
+		self.mb_size = 16 #Minibatch size
 		self.print_interval = 10 #How often we print progress
 		self.n = 0 #Minibatch seed
-		self.images = self.load_images('data/faces') #Image data
-		self.disc_iterations = 15 #Number of iterations to train disc for per gen iteration
-		self.save_interval = 1000 #Save model every save_interval epochs
+		self.images = self.load_images('data/celeb_images_10000') #Image data
+		self.disc_iterations = 10 #Number of iterations to train disc for per gen iteration
+		self.save_interval = 500 #Save model every save_interval epochs
 		self.max_iterations = 1000000 #Max iterations to train for
 
 		#create output directory
@@ -112,13 +112,13 @@ class model(object):
 
 	#Repeated block to be used in the discriminator
 	def discriminator_block(self, inputs, out, kernel_size, stride):
-	    res = inputs
-	    net = tf.layers.conv2d(inputs, out, kernel_size, stride, padding = 'same', activation = None)
-	    net = lrelu(net)
-	    net = tf.layers.conv2d(net, out, kernel_size, stride, padding = 'same', activation = None)
-	    net = net + inputs
-	    net = lrelu(net)
-	    return net
+		res = inputs
+		net = tf.layers.conv2d(inputs, out, kernel_size, stride, padding = 'same', activation = None)
+		net = lrelu(net)
+		net = tf.layers.conv2d(net, out, kernel_size, stride, padding = 'same', activation = None)
+		net = net + inputs
+		net = lrelu(net)
+		return net
 
 
     #Creates the discriminator network
@@ -133,22 +133,26 @@ class model(object):
 			net = tf.layers.conv2d(net, 64, 4, 2, padding = 'same')
 			net = lrelu(net)
 
-			net = self.discriminator_block(net, 64, 3, 1)
+			for _ in range(4):
+				net = self.discriminator_block(net, 64, 3, 1)
 
 			net = tf.layers.conv2d(net, 128, 4, 2, padding = 'same')
 			net = lrelu(net)
 
-			net = self.discriminator_block(net, 128, 3, 1)
+			for _ in range(4):
+				net = self.discriminator_block(net, 128, 3, 1)
 
 			net = tf.layers.conv2d(net, 256, 3, 2, padding = 'same')
 			net = lrelu(net)
 
-			net = self.discriminator_block(net, 256, 3, 1)
+			for _ in range(4):
+				net = self.discriminator_block(net, 256, 3, 1)
 
 			net = tf.layers.conv2d(net, 512, 3, 2, padding = 'same')
 			net = lrelu(net)
 
-			net = self.discriminator_block(net, 512, 3, 1)
+			for _ in range(4):
+				net = self.discriminator_block(net, 512, 3, 1)
 
 			net = tf.layers.conv2d(net, 512, 3, 2, padding = 'same')
 			net = lrelu(net)
@@ -176,14 +180,14 @@ class model(object):
 	def generator(self, z, isTrain = True, reuse = False):
 
 		with tf.variable_scope('Generator', reuse = reuse):
-			net = tf.layers.dense(z, 64*16*16)
+			net = tf.layers.dense(z, 64*24*24)
 			net = tf.layers.batch_normalization(net, training = isTrain)
-			net = tf.reshape(net, [-1, 16, 16, 64])
+			net = tf.reshape(net, [-1, 24, 24, 64])
 			net = tf.nn.relu(net)
 
 			inputs = net
 
-			for i in range(4):
+			for i in range(16):
 				net = self.generator_block(net, 64, 3, 1, isTrain)
 
 			net = tf.layers.batch_normalization(net, training = isTrain)
@@ -227,10 +231,13 @@ class model(object):
 
 			self.saver = tf.train.Saver()
 			
+			#saver = tf.train.import_meta_graph('Training Model/train_model-17500.meta')
+			#saver.restore(sess, tf.train.latest_checkpoint('Training Model/'))
+
 			d_average = 0 #Average disc loss
 			g_average = 0 #Average gen loss
 
-			for it in range(self.max_iterations):
+			for it in range(1, self.max_iterations):
 				
 				#Train discriminator
 				for i in range(self.disc_iterations):
@@ -278,6 +285,6 @@ def main():
 	GAN()
 
 
-if __name__ == '__main__'
+if __name__ == '__main__':
 	main()
 
