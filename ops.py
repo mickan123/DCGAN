@@ -26,6 +26,18 @@ def minibatch_discrimination(input_layer, num_kernels, dim_per_kernel = 3):
 
 	return tf.concat([input_layer, minibatch_features], 1)
 
+
+#Loads images dataset normalizing and resizing them
+def load_images(size, path):
+	image_list = []
+	for i, image_path in enumerate(glob.glob(path + "/*")):
+		image = misc.imread(image_path)
+		image = misc.imresize(image, [size, size])
+		image = image.flatten()/127.5 - 1
+		image_list.append(image)
+	
+	return image_list
+
 #Returns 4x4 plot of image samples
 def plot(samples, dim):
 	fig = plt.figure(figsize=(4, 4))
