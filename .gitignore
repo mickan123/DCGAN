@@ -2,3 +2,4 @@ out/*
 Training*/
 data/
 out*/
+__pycache__/

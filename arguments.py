@@ -14,15 +14,9 @@ def parse_arguments():
 	parser.add_argument("-d", "-data_dir",
 						help = "Dataset directory location",
 						default = "data/faces")
-	parser.add_argument("-d", "-data_dir",
-						help = "Dataset directory location",
-						default = "data/faces")
 	parser.add_argument("-di", "-disc_iter",
 						help = "Number of iterations to train discriminator for per generator iter",
 						default = 1)
-	parser.add_argument("-s", "-save_interval",
-						help = "Save the model every given iterations",
-						default = 500)
 	parser.add_argument("-s", "-save_interval",
 						help = "Save the model every given iterations",
 						default = 500)
@@ -32,9 +26,6 @@ def parse_arguments():
 	parser.add_argument("-id", "-image_dim",
 						help = "Dimension of the image (N x N)",
 						default = 96)
-	parser.add_argument("-p", "-print_interval",
-						help = "Print log details and output image every so many iterations",
-						default = 100)
 	parser.add_argument("-p", "-print_interval",
 						help = "Print log details and output image every so many iterations",
 						default = 100)
@@ -51,6 +42,7 @@ def parse_arguments():
 								  in folder \'Training-Models\' in cur directory. Provide meta 
 								  file name in this directory""",
 						default = None)
-
+	
+	return parser.parse_args()
 
 

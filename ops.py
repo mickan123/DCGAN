@@ -1,7 +1,9 @@
 import tensorflow as tf
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import numpy as np
+import glob
+from scipy import misc
 
 #Leaky relu function
 def lrelu(x, th=0.2):

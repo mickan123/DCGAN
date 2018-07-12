@@ -1,5 +1,4 @@
-from scipy import misc
-import glob
+
 import time
 import tensorflow as tf
 import numpy as np
@@ -16,19 +15,19 @@ class model(object):
 	def __init__(self, args):
 		
 		self.IMAGE_DIM = int(args.id) #output image size is IMAGE_DIM x IMAGE_DIM
-		self.images = self.load_images(self.IMAGE_DIM, args.id) #Image dataset
+		#self.images = load_images(self.IMAGE_DIM, args.d) #Image dataset
 
 		self.disc_iterations = int(args.di) #Number of iterations to train disc for per gen iteration
 		self.max_iterations = int(args.i) #Max iterations to train for
 		self.save_interval = int(args.s) #Save model every save_interval epochs
-		self.print_interval = int(args.pr) #How often we print progress
+		self.print_interval = int(args.p) #How often we print progress
 		
 		self.mb_size = int(args.mb) #Minibatch size
 		self.Z_dim = int(args.z) #Noise vector dimensions
-		self.mult = int(args.m)
-		self.loss = args.l
+		self.mult = float(args.m) #Scalar multiplier for model size
+		self.loss = args.l #Loss function to use
 		
-		self.lambd = .5
+		self.lambd = .5 #Used for DRAGAN
 		self.n = 0 #Minibatch seed
 
 		self.load_model = args.lm #Model to load
@@ -61,7 +60,7 @@ class model(object):
 			self.DRAGAN_loss()
 		elif (self.loss == "rel"):
 			self.relativistic_GAN_loss()
-		else
+		else:
 			self.vanilla_GAN_loss()
 
 		self.build_solver()
@@ -264,11 +263,11 @@ class model(object):
 
 	#Returns random noise vector
 	def noise_vec(self, size):
- 		return np.random.normal(0, 1, (size, self.Z_dim))
+		return np.random.normal(0, 1, (size, self.Z_dim))
 
- 	#Train step for the discriminator
- 	def discriminator_train_step(self):
- 		total_loss = 0
+	#Train step for the discriminator
+	def discriminator_train_step(self):
+		total_loss = 0
 
 		for i in range(self.disc_iterations):
 			batch = self.next_batch()
@@ -321,7 +320,7 @@ class model(object):
 
 			self.saver = tf.train.Saver()
 			
-			if (self.load_model != None)
+			if (self.load_model != None):
 				self.saver = tf.train.import_meta_graph('Training Model/' + self.load_model)
 				self.aver.restore(sess, tf.train.latest_checkpoint('Training Model/'))
 
