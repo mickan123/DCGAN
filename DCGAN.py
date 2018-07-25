@@ -46,10 +46,11 @@ class model(object):
 			os.makedirs('out/')
 
 	def __call__(self):
-		self.build_model()
-		self.train_model()
+		with tf.Session() as self.sess:
+			self.build_model()
+			self.tensorboard_writer = tf.summary.FileWriter('logs', self.sess.graph)
+			self.train_model()
 
-		
 	#Builds the model to be run
 	def build_model(self):
 
@@ -136,7 +137,6 @@ class model(object):
 
 	#From paper https://arxiv.org/pdf/1807.00734.pdf
 	def relativistic_GAN_loss(self):
-
 		#Get sample from generator
 		self.G_sample = generator(self.Z, self.mult, isTrain = self.isTrain)
 
@@ -295,33 +295,31 @@ class model(object):
 	def train_model(self):
 		self.start_time = time.time()
 
-		with tf.Session() as self.sess:
+		self.sess.run(tf.global_variables_initializer())
 
-			self.sess.run(tf.global_variables_initializer())
+		self.saver = tf.train.Saver()
+		
+		if (self.load_model != None):
+			self.saver = tf.train.import_meta_graph('Training Model/' + self.load_model)
+			self.aver.restore(self.sess, tf.train.latest_checkpoint('Training Model/'))
 
-			self.saver = tf.train.Saver()
+		gen_avg_loss = 0
+		disc_avg_loss = 0
+
+		for self.it in range(1, self.max_iterations):
+			disc_avg_loss += self.discriminator_train_step()
+			gen_avg_loss += self.generator_train_step()
 			
-			if (self.load_model != None):
-				self.saver = tf.train.import_meta_graph('Training Model/' + self.load_model)
-				self.aver.restore(self.sess, tf.train.latest_checkpoint('Training Model/'))
-
-			gen_avg_loss = 0
-			disc_avg_loss = 0
-
-			for self.it in range(1, self.max_iterations):
-				disc_avg_loss += self.discriminator_train_step()
-				gen_avg_loss += self.generator_train_step()
+			#Store some progress images 
+			if self.it % self.print_interval == 0:
+				self.generate_statistics(disc_avg_loss, gen_avg_loss)
+				disc_avg_loss = 0
+				gen_avg_loss = 0
 				
-				#Store some progress images 
-				if self.it % self.print_interval == 0:
-					self.generate_statistics(disc_avg_loss, gen_avg_loss)
-					disc_avg_loss = 0
-					gen_avg_loss = 0
-					
-				if (self.it % self.save_interval == 0):
-					self.saver.save(self.sess, 'Training Model/train_model', global_step = self.it)
+			if (self.it % self.save_interval == 0):
+				self.saver.save(self.sess, 'Training Model/train_model', global_step = self.it)
 
-			self.saver.save(self.sess, 'Final Model/Final_model')
+		self.saver.save(self.sess, 'Final Model/Final_model')
 
 
 def main():

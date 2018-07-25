@@ -17,7 +17,7 @@ def discriminator(x, image_dim, mult, isTrain = False, reuse = False, coord_conv
 
 	x_image = tf.reshape(x, [-1, image_dim, image_dim, 3])
 
-	with tf.variable_scope('Discriminator', reuse = tf.AUTO_REUSE):
+	with tf.variable_scope('Discriminator', reuse = reuse):
 
 		if (coord_conv):
 			net = CoordConv(x_image, int(32 * mult), 3, 1, padding = 'same')
