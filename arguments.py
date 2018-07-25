@@ -35,14 +35,27 @@ def parse_arguments():
 									drag (DRAGAN)
 									rel  (Relativistic GAN)
 									def  (Original default GAN)
+									cond (Conditional GAN)
 									""",
-						default = "rel")
+						default = "cond")
 	parser.add_argument("-lm", "-load_model",
 						help = """Specify location of model to load, assumes models are located
 								  in folder \'Training-Models\' in cur directory. Provide meta 
 								  file name in this directory""",
 						default = None)
-	
+	parser.add_argument("-dlr", "-decay_learning_rate",
+						help = "Causes the model to use a decaying learning rate",
+						action = "store_true")
+	parser.add_argument("-cc", "-coord_conv",
+						help = "Uses coord conv layer instead of regular conv for first layer of disc",
+						action = "store_true")
+	parser.add_argument("-tp", "-tag_path",
+						help = "Specify location of tags file for images",
+						default = "data/tags_clean.csv")
+	parser.add_argument("-ni", "-num_images",
+						help = "Only load a set number of images",
+						default = 30000)
+
 	return parser.parse_args()
 
 

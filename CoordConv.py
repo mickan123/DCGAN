@@ -2,7 +2,6 @@ import tensorflow as tf
 from tensorflow.python.layers import base
 
 #Coord conv from paper https://arxiv.org/pdf/1807.03247.pdf
-
 class AddCoords(base.Layer):
 
 	"""Add coords to a tensor"""
