@@ -57,9 +57,9 @@ def discriminator(x, image_dim, mult, isTrain = False, reuse = False, coord_conv
 
 		net = tf.layers.Flatten()(net)
 		logits = tf.layers.dense(net, 1)
-		#tags = tf.layers.dense(net, 23)
+		tags = tf.layers.dense(net, 23)
 
-	return logits, None
+	return logits, tags
 
 #Repeated block to be used in the generator
 def generator_block(inputs, out, kernel_size, stride, isTrain = True):
@@ -76,10 +76,10 @@ def generator_block(inputs, out, kernel_size, stride, isTrain = True):
 #Creates the generator network
 def generator(z, mult, tags = None, isTrain = True, reuse = False):
 
-	if tags != None:
-		z = tf.concat([z, tags], axis = 1)
-
 	with tf.variable_scope('Generator', reuse = reuse):
+		if tags != None:
+			z = tf.concat([z, tags], axis = 1)
+
 		net = tf.layers.dense(z, int(64*24*24 * mult))
 		net = tf.layers.batch_normalization(net, training = isTrain)
 		net = tf.reshape(net, [-1, 24, 24, int(64 * mult)])

@@ -123,7 +123,7 @@ def plot(samples, dim):
 		ax.set_xticklabels([])
 		ax.set_yticklabels([])
 		ax.set_aspect('equal')
-		plt.imshow(sample.reshape(dim, dim, 3), cmap='Greys_r')
+		plt.imshow(sample, cmap='Greys_r')
 
 	return fig
 

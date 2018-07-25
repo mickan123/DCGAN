@@ -35,7 +35,6 @@ class model(object):
 		self.coord_conv = args.cc #Boolean on whether to use coord conv
 		
 		self.lambd = .5 #Used for DRAGAN
-		self.loss_label_mul = 5 #Weighting for label vs tag for cond GAN
 		self.learning_rate = 2e-4
 		self.n = 0 #Minibatch seed
 		self.it = 0 #Current iteration
@@ -150,7 +149,6 @@ class model(object):
 
 	#Implements vanilla GAN loss with conditional loss from tags
 	def conditional_GAN_loss(self):
-
 		#Get fake sample from generator
 		self.G_sample = generator(self.Z, self.mult, self.fake_tag, self.isTrain)
 
@@ -243,12 +241,13 @@ class model(object):
 		for i in range(self.disc_iterations):
 			imgs, tags = self.next_batch()
 			feed = {self.X: imgs, 
-					self.real_tag: tags,
 					self.Z: self.noise_vec(self.mb_size), 
-					self.fake_tag: self.gen_fake_tag(self.mb_size),
 					self.isTrain: True}
 
-			if (self.loss == "drag"):
+			if (self.loss == "cond"):
+				feed[self.fake_tag] = self.gen_fake_tag(self.mb_size)
+				feed[self.real_tag] = tags
+			elif (self.loss == "drag"):
 				feed[self.X_p] = self.get_perturbed_batch(imgs)
 
 			_, loss = self.sess.run([self.D_solver, self.D_loss], feed_dict = feed)
@@ -258,10 +257,10 @@ class model(object):
 
 	def generator_train_step(self):
 		feed = {self.Z: self.noise_vec(self.mb_size), 
-				self.fake_tag: self.gen_fake_tag(self.mb_size),
 				self.isTrain: True}
-
-		if (self.loss == "rel"):
+		if (self.loss == "cond"):
+			feed[self.fake_tag] = self.gen_fake_tag(self.mb_size)
+		elif (self.loss == "rel"):
 			imgs, tags = self.next_batch()
 			feed[self.X] = imgs
 
@@ -271,8 +270,10 @@ class model(object):
 	def generate_statistics(self, d_loss, g_loss):
 		#Generate and save some samples to out/ folder
 		feed = {self.Z: self.noise_vec(16), 
-				self.fake_tag: self.gen_fake_tag(16),
 				self.isTrain: False}
+		if (self.loss == "cond"):
+			feed[self.fake_tag] = self.gen_fake_tag(16)
+
 		samples = self.sess.run(self.G_sample, feed_dict = feed)
 		fig = plot(samples, self.IMAGE_DIM)
 		plt.savefig('out/{}.png'.format(str(self.it / self.print_interval).zfill(3)), bbox_inches = 'tight')
